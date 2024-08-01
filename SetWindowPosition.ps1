@@ -33,9 +33,9 @@ if (-not ([type]::GetType("Window"))) {
         }
     }
 "@
-    Write-Output "Window type defined successfully."
+    Write-Host "Window type defined successfully."
 } else {
-    Write-Output "Window type already exists."
+    Write-Host "Window type already exists."
 }
 
 function Set-Window {
@@ -50,9 +50,19 @@ function Set-Window {
     [Window]::MoveWindow($Handle, $X, $Y, $Width, $Height, $true)
 }
 
-# set window pos and size as per saved config file
+# Get all running processes with a main window
+$runningApps = Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object Id, ProcessName, MainWindowTitle, MainWindowHandle
+
 foreach ($window in $config) {
-    $handle = [IntPtr]::new([Convert]::ToInt64($window.Handle))
-    Set-Window -Handle $handle -X $window.Left -Y $window.Top -Width $window.Width -Height $window.Height
-    Write-Output "Moved window '$($window.WindowTitle)' to position X:$($window.Left) Y:$($window.Top)"
+    $matchedApp = $runningApps | Where-Object {
+        $_.ProcessName -eq $window.ProcessName -and $_.MainWindowTitle -eq $window.WindowTitle
+    }
+
+    if ($matchedApp) {
+        $handle = $matchedApp.MainWindowHandle
+        Set-Window -Handle $handle -X $window.Left -Y $window.Top -Width $window.Width -Height $window.Height
+        Write-Output "Moved window '$($window.WindowTitle)' to position X:$($window.Left) Y:$($window.Top)"
+    } else {
+        Write-Warning "No matching window found for process '$($window.ProcessName)' with title '$($window.WindowTitle)'."
+    }
 }
