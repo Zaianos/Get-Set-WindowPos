@@ -32,9 +32,9 @@ function Get-WindowPositions {
         }
     }
 "@
-        Write-Output "Window type defined successfully."
+        Write-Host "Window type defined successfully."
     } else {
-        Write-Output "Window type already exists."
+        Write-Host "Window type already exists."
     }
 
     $runningApps = Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object Id, ProcessName, MainWindowTitle
@@ -50,7 +50,6 @@ function Get-WindowPositions {
             $windowInfo = [PSCustomObject]@{
                 ProcessName = $app.ProcessName
                 WindowTitle = $app.MainWindowTitle
-                Handle      = $handle.ToInt64()
                 Left        = $rect.Left
                 Top         = $rect.Top
                 Width       = $rect.Right - $rect.Left
